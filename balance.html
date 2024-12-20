@@ -1,0 +1,197 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>Balance - Simple Crypto Exchange</title>
+    <style>
+        body {
+            font-family: Arial, sans-serif;
+            margin: 0;
+            padding: 0;
+            background-color: #f4f4f9;
+            color: #333;
+            overflow: hidden; /* To hide overflowing 3D canvas */
+        }
+
+        #background-canvas {
+            position: fixed;
+            top: 0;
+            left: 0;
+            z-index: -1;
+            width: 100vw;
+            height: 100vh;
+        }
+
+        header {
+            background-color: #2d3436;
+            color: white;
+            text-align: center;
+            padding: 30px 0;
+            box-shadow: 0 4px 8px rgba(0, 0, 0, 0.1);
+        }
+
+        header h1 {
+            font-size: 36px;
+            margin: 0;
+        }
+
+        nav a {
+            color: #fff;
+            text-decoration: none;
+            padding: 12px 20px;
+            font-size: 18px;
+            margin: 0 15px;
+            border-radius: 5px;
+            transition: background-color 0.3s;
+        }
+
+        nav a:hover {
+            background-color: #45a049;
+        }
+
+        .container {
+            width: 80%;
+            margin: 0 auto;
+            padding: 40px 0;
+            text-align: center;
+        }
+
+        footer {
+            background-color: #333;
+            color: white;
+            text-align: center;
+            padding: 20px;
+            margin-top: 50px;
+        }
+
+        .balance-info {
+            font-size: 24px;
+            margin: 20px 0;
+        }
+
+        .balance-info span {
+            font-weight: bold;
+        }
+
+        .button {
+            background-color: #4CAF50;
+            color: white;
+            padding: 10px 20px;
+            border-radius: 5px;
+            text-decoration: none;
+            font-size: 18px;
+            margin-top: 20px;
+        }
+
+        .button:hover {
+            background-color: #45a049;
+        }
+    </style>
+</head>
+<body>
+    <canvas id="background-canvas"></canvas>
+
+    <header>
+        <h1>Check Your Balance</h1>
+        <nav>
+            <a href="/">Home</a>
+            <a href="/exchange">Exchange</a>
+            <a href="/logout">Logout</a>
+        </nav>
+    </header>
+
+    <div class="container">
+        <h2>Your MetaMask Wallet Balance</h2>
+        <p class="balance-info">
+            <span id="wallet-address">Loading wallet address...</span><br>
+            <span id="wallet-balance">Loading balance...</span>
+        </p>
+
+        <a href="/exchange" class="button">Go to Exchange</a>
+    </div>
+
+    <footer>
+        <p>&copy; 2024 Simple Crypto Exchange. All rights reserved.</p>
+    </footer>
+
+    <script src="https://cdnjs.cloudflare.com/ajax/libs/three.js/110/three.min.js"></script>
+    <script src="https://cdn.jsdelivr.net/npm/ethers@5.0.8/dist/ethers.umd.min.js"></script>
+
+    <script>
+        // 3D Trading Chart Setup
+        const canvas = document.getElementById('background-canvas');
+        const scene = new THREE.Scene();
+        const camera = new THREE.PerspectiveCamera(75, window.innerWidth / window.innerHeight, 0.1, 1000);
+        const renderer = new THREE.WebGLRenderer({ canvas, alpha: true });
+        renderer.setSize(window.innerWidth, window.innerHeight);
+
+        // Line Geometry
+        const lineMaterial = new THREE.LineBasicMaterial({ color: 0xff4444 });
+        const points = [];
+        for (let i = 0; i < 20; i++) {
+            points.push(new THREE.Vector3(i - 10, Math.random() * 5 - 2.5, 0));
+        }
+        const lineGeometry = new THREE.BufferGeometry().setFromPoints(points);
+        const tradingLine = new THREE.Line(lineGeometry, lineMaterial);
+        scene.add(tradingLine);
+
+        // Add grid for better visualization
+        const gridHelper = new THREE.GridHelper(30, 30);
+        scene.add(gridHelper);
+
+        // Lighting
+        const ambientLight = new THREE.AmbientLight(0x404040, 2); // Soft white light
+        scene.add(ambientLight);
+
+        // Camera position
+        camera.position.set(0, 5, 15);
+        camera.lookAt(0, 0, 0);
+
+        // Animation
+        function animate() {
+            requestAnimationFrame(animate);
+
+            // Animate points to simulate trading dynamics
+            points.forEach((point, index) => {
+                point.y += (Math.random() - 0.5) * 0.1; // Random fluctuation
+            });
+            tradingLine.geometry.setFromPoints(points);
+
+            renderer.render(scene, camera);
+        }
+        animate();
+
+        // Adjust canvas on resize
+        window.addEventListener('resize', () => {
+            renderer.setSize(window.innerWidth, window.innerHeight);
+            camera.aspect = window.innerWidth / window.innerHeight;
+            camera.updateProjectionMatrix();
+        });
+
+        // MetaMask Wallet Connection
+        if (typeof window.ethereum !== 'undefined') {
+            const provider = new ethers.providers.Web3Provider(window.ethereum);
+            const signer = provider.getSigner();
+
+            async function connectMetaMask() {
+                try {
+                    const accounts = await ethereum.request({ method: 'eth_requestAccounts' });
+                    const walletAddress = accounts[0];
+                    document.getElementById('wallet-address').innerText = `Wallet Address: ${walletAddress}`;
+
+                    const balance = await signer.getBalance();
+                    const formattedBalance = ethers.utils.formatEther(balance);
+                    document.getElementById('wallet-balance').innerText = `Balance: ${formattedBalance} ETH`;
+                } catch (error) {
+                    console.error("Error connecting to MetaMask", error);
+                    alert("Please ensure MetaMask is unlocked and connected.");
+                }
+            }
+            connectMetaMask();
+        } else {
+            alert('Please install MetaMask!');
+        }
+    </script>
+</body>
+</html>
