@@ -1,5 +1,7 @@
 🚀 CryptoXchange — Decentralized Crypto Exchange Platform
 
+----
+
 🔥 Overview
 
 CryptoXchange is a modern decentralized crypto exchange platform that allows users to:
@@ -31,7 +33,9 @@ Built to empower users with complete control over their assets without centraliz
 ---
 
 🛠️ Tech Stack
+
 Frontend	Blockchain	Smart Contracts	APIs & Libraries
+
 React / Next.js	Ethereum / BSC / Polygon	Solidity (Uniswap-like contracts)	Web3.js / Ethers.js, Chainlink, WalletConnect
 
 ---
